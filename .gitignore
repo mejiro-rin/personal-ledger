@@ -1,0 +1,16 @@
+.venv/
+.idea/
+.trae/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+
+/demo/
+/tmp/
+/.personal-ledger/
+
+ER.drawio
+services/README.md
