@@ -1,16 +1,21 @@
+# 环境变量与ide配置
+.DS_Store
 .venv/
 .idea/
 .trae/
 
+# 编译输出
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.DS_Store
 
-/demo/
-/tmp/
-/.personal-ledger/
+# 数据文件
+data/
+demo/
+tmp/
+.personal-ledger/
 
+# 临时文档
 ER.drawio
 services/README.md
