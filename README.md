@@ -16,13 +16,16 @@ personal-ledger/
 ├── models/          # ORM 建表模型 + Schema
 ├── repositories/    # 数据访问层
 ├── services/        # 业务逻辑层
+├── ui/              # 用户界面模块
 ├── utils/           # 配置与路径管理
-└── Tui.py           # TUI 测试入口
+└── main.py          # 统一入口（按参数选择 UI）
 ```
 
 ## 架构分层
 ```
-TUI 入口
+main.py（统一入口）
+   ↓
+ui/（用户界面层：TUI / WebUI）
    ↓
 Service 层（业务逻辑、事务边界、余额联动）
    ↓
@@ -37,16 +40,19 @@ SQLite
 # 安装依赖
 uv sync
 
-# 运行 TUI
-python Tui.py
+# 运行 TUI（推荐）
+python main.py
+
+# 或显式指定模式
+python main.py --mode tui
 ```
 - **或使用 pip**
 ```bash
-# 或使用 pip
+# 安装依赖
 pip install -r requirements.txt
 
-# 运行 TUI
-python Tui.py
+# 运行 TUI（推荐）
+python main.py
 ```
 
 数据文件存放路径：
@@ -62,7 +68,9 @@ python Tui.py
 - 创建/删除交易时自动联动更新账户余额
 
 ## 当前版本
-`v0.1.0-alpha` — TUI 测试版，功能验证阶段，数据结构可能变更。
+`v0.1.1-alpha` — 针对 v0.1.0 测试版的结构重构：
+- 将 TUI 拆分为独立模块 `ui/tui.py`
+- 新增 `main.py` 统一入口，支持通过 `--mode` 参数选择 UI（预留 WebUI）
 
 ## 许可证
 MIT License

@@ -12,10 +12,7 @@ class Tag(SQLModel, table=True):
     """标签建表模型"""
     __tablename__ = "tags"
 
-    id: int | None = Field(
-        default=None,
-        sa_column=Column(Integer, primary_key=True, autoincrement=True)
-    )
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True, unique=True)
 
     transactions: list["Transaction"] = Relationship(

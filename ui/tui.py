@@ -1,7 +1,6 @@
 """
-personal-ledger TUI 测试程序
+personal-ledger TUI
 依赖：rich
-用法：python tui.py
 """
 import sys
 from decimal import Decimal, InvalidOperation
@@ -11,9 +10,8 @@ from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
 from rich import box
 
-# ── 路径修正，确保能找到项目模块 ──────────────────────────────────────────────
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from engines.database import create_db_and_tables, get_session
 from models.account import AccountCreate, AccountUpdate, AccountType
@@ -36,18 +34,22 @@ transaction_svc = TransactionService()
 # ── 工具函数 ──────────────────────────────────────────────────────────────────
 
 def get_session_once():
+    """获取一个数据库会话，用完后自动关闭。"""
     return next(get_session())
 
 def pause():
+    """暂停并等待用户按 Enter 继续。"""
     Prompt.ask("\n[dim]按 Enter 继续[/dim]")
 
 def show_error(e: Exception):
+    """在控制台显示错误信息。"""
     if isinstance(e, AppBaseException):
         console.print(f"[red]✗ {e.message}[/red]")
     else:
         console.print(f"[red]✗ 未知错误：{e}[/red]")
 
 def pick_enum(label: str, enum_cls) -> str:
+    """通过序号从枚举中选择一个值。"""
     members = [e.value for e in enum_cls]
     for i, v in enumerate(members, 1):
         console.print(f"  {i}. {v}")
@@ -58,6 +60,7 @@ def pick_enum(label: str, enum_cls) -> str:
         console.print("[yellow]请输入有效序号[/yellow]")
 
 def pick_id(label: str) -> int:
+    """让用户输入并返回一个数字 ID，输入无效时会重复提示。"""
     while True:
         raw = Prompt.ask(label)
         if raw.isdigit():
@@ -65,6 +68,7 @@ def pick_id(label: str) -> int:
         console.print("[yellow]请输入数字 ID[/yellow]")
 
 def pick_decimal(label: str) -> Decimal:
+    """让用户输入并返回一个 Decimal 金额，输入无效时会重复提示。"""
     while True:
         raw = Prompt.ask(label)
         try:
@@ -76,6 +80,7 @@ def pick_decimal(label: str) -> Decimal:
 # ── Account ───────────────────────────────────────────────────────────────────
 
 def account_menu():
+    """账户管理子菜单，循环进入增删改查操作。"""
     while True:
         console.print(Panel("[bold]账户管理[/bold]", box=box.ROUNDED))
         console.print("1. 查看所有账户\n2. 创建账户\n3. 更新账户\n4. 删除账户\n0. 返回")
@@ -92,6 +97,7 @@ def account_menu():
             delete_account()
 
 def list_accounts():
+    """以表格形式打印所有账户信息。"""
     with get_session_once() as session:
         accounts = account_svc.list(session)
     t = Table(box=box.SIMPLE)
@@ -103,11 +109,16 @@ def list_accounts():
     pause()
 
 def create_account():
+    """创建新账户，依次录入名称、类型、初始余额等信息。"""
     console.print("[bold]── 创建账户 ──[/bold]")
     name = Prompt.ask("名称")
     account_type = pick_enum("账户类型", AccountType)
     balance = pick_decimal("初始余额")
-    currency = Prompt.ask("货币", default="CNY")
+    
+    # 货币暂时禁止自定义，默认人民币
+    # currency = Prompt.ask("货币", default="CNY")
+    currency = "CNY"
+
     note = Prompt.ask("备注（可空）", default="") or None
     try:
         with get_session_once() as session:
@@ -121,6 +132,7 @@ def create_account():
     pause()
 
 def update_account():
+    """更新已有账户的名称或备注。"""
     list_accounts()
     id = pick_id("要更新的账户 ID")
     console.print("[dim]留空表示不修改[/dim]")
@@ -135,6 +147,7 @@ def update_account():
     pause()
 
 def delete_account():
+    """删除指定 ID 的账户，删除前需确认。"""
     list_accounts()
     id = pick_id("要删除的账户 ID")
     if Confirm.ask(f"确认删除账户 {id}？"):
@@ -150,6 +163,7 @@ def delete_account():
 # ── Category ──────────────────────────────────────────────────────────────────
 
 def category_menu():
+    """分类管理子菜单，循环进入增删改查操作。"""
     while True:
         console.print(Panel("[bold]分类管理[/bold]", box=box.ROUNDED))
         console.print("1. 查看所有分类\n2. 创建分类\n3. 更新分类\n4. 删除分类\n0. 返回")
@@ -166,6 +180,7 @@ def category_menu():
             delete_category()
 
 def list_categories():
+    """以表格形式打印所有分类信息。"""
     with get_session_once() as session:
         cats = category_svc.list(session)
     t = Table(box=box.SIMPLE)
@@ -177,6 +192,7 @@ def list_categories():
     pause()
 
 def create_category():
+    """创建新分类，依次录入名称、分类类型、父分类 ID。"""
     console.print("[bold]── 创建分类 ──[/bold]")
     name = Prompt.ask("名称")
     category_type = pick_enum("分类类型", CategoryType)
@@ -192,6 +208,7 @@ def create_category():
     pause()
 
 def update_category():
+    """更新已有分类的名称。"""
     list_categories()
     id = pick_id("要更新的分类 ID")
     name = Prompt.ask("新名称（留空跳过）", default="") or None
@@ -204,6 +221,7 @@ def update_category():
     pause()
 
 def delete_category():
+    """删除指定 ID 的分类，删除前需确认。"""
     list_categories()
     id = pick_id("要删除的分类 ID")
     if Confirm.ask(f"确认删除分类 {id}？"):
@@ -219,6 +237,7 @@ def delete_category():
 # ── Tag ───────────────────────────────────────────────────────────────────────
 
 def tag_menu():
+    """标签管理子菜单，循环进入增删改查操作。"""
     while True:
         console.print(Panel("[bold]标签管理[/bold]", box=box.ROUNDED))
         console.print("1. 查看所有标签\n2. 创建标签\n3. 更新标签\n4. 删除标签\n0. 返回")
@@ -235,6 +254,7 @@ def tag_menu():
             delete_tag()
 
 def list_tags():
+    """以表格形式打印所有标签信息。"""
     with get_session_once() as session:
         tags = tag_svc.list(session)
     t = Table(box=box.SIMPLE)
@@ -246,6 +266,7 @@ def list_tags():
     pause()
 
 def create_tag():
+    """创建新标签，录入标签名称。"""
     name = Prompt.ask("标签名称")
     try:
         with get_session_once() as session:
@@ -256,6 +277,7 @@ def create_tag():
     pause()
 
 def update_tag():
+    """更新已有标签的名称。"""
     list_tags()
     id = pick_id("要更新的标签 ID")
     name = Prompt.ask("新名称")
@@ -268,6 +290,7 @@ def update_tag():
     pause()
 
 def delete_tag():
+    """删除指定 ID 的标签，删除前需确认。"""
     list_tags()
     id = pick_id("要删除的标签 ID")
     if Confirm.ask(f"确认删除标签 {id}？"):
@@ -283,6 +306,7 @@ def delete_tag():
 # ── Transaction ───────────────────────────────────────────────────────────────
 
 def transaction_menu():
+    """交易记录管理子菜单，循环进入查看、创建、删除操作。"""
     while True:
         console.print(Panel("[bold]交易记录[/bold]", box=box.ROUNDED))
         console.print("1. 查看所有记录\n2. 创建记录\n3. 删除记录\n0. 返回")
@@ -297,6 +321,7 @@ def transaction_menu():
             delete_transaction()
 
 def list_transactions():
+    """以表格形式打印所有交易记录，含账户、分类、金额、标签等信息。"""
     with get_session_once() as session:
         txs = transaction_svc.list(session)
     t = Table(box=box.SIMPLE)
@@ -313,9 +338,9 @@ def list_transactions():
     pause()
 
 def create_transaction():
+    """创建新交易记录，支持收入、支出和转账三种类型。"""
     console.print("[bold]── 创建交易记录 ──[/bold]")
     transaction_type = pick_enum("交易类型", TransactionType)
-    
     if transaction_type == TransactionType.TRANSFER:
         from_account_id = pick_id("转出账户 ID")
         to_account_id = pick_id("转入账户 ID")
@@ -328,7 +353,6 @@ def create_transaction():
         amount = pick_decimal("金额")
         from_account_id = None
         to_account_id = None
-        
     note = Prompt.ask("备注（可空）", default="") or None
     tag_ids_raw = Prompt.ask("标签 ID（多个用逗号分隔，可空）", default="")
     tag_ids = [int(x.strip()) for x in tag_ids_raw.split(",") if x.strip().isdigit()]
@@ -347,6 +371,7 @@ def create_transaction():
     pause()
 
 def delete_transaction():
+    """删除指定 ID 的交易记录，删除前需确认。"""
     list_transactions()
     id = pick_id("要删除的记录 ID")
     if Confirm.ask(f"确认删除交易 {id}？"):
@@ -361,7 +386,8 @@ def delete_transaction():
 
 # ── 主菜单 ────────────────────────────────────────────────────────────────────
 
-def main():
+def run_tui():
+    """启动 TUI 主程序，初始化数据库并进入主菜单循环。"""
     create_db_and_tables()
     console.print(Panel("[bold green]Personal Ledger TUI[/bold green]", box=box.DOUBLE))
     while True:
@@ -381,4 +407,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_tui()

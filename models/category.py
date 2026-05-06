@@ -17,10 +17,7 @@ class Category(SQLModel, table=True):
     """分类建表模型"""
     __tablename__ = "categories"
 
-    id: int | None = Field(
-        default=None,
-        sa_column=Column(Integer, primary_key=True, autoincrement=True)
-    )
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     category_type: CategoryType
     parent_id: int = Field(default=0, foreign_key="categories.id")

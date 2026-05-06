@@ -9,6 +9,7 @@ from exceptions.service_exceptions import ResourceNotFoundError, DuplicateNameEr
 
 
 def _validate_decimal_places(value: Decimal, field_name: str, max_places: int = 2) -> None:
+    """校验金额字段是否符合最大小数位数要求"""
     if value.as_tuple().exponent < -max_places:
         raise InvalidDecimalError(field_name, max_places)
 

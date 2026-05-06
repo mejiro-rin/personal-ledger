@@ -22,10 +22,7 @@ class Account(SQLModel, table=True):
     """Account 建表模型"""
     __tablename__ = "accounts"
 
-    id: int | None = Field(
-        default=None,
-        sa_column=Column(Integer, primary_key=True, autoincrement=True)
-    )
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     account_type: AccountType
     balance: Decimal = Field(default=Decimal("0.0"))

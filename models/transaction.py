@@ -24,10 +24,7 @@ class Transaction(SQLModel, table=True):
     """交易记录建表模型"""
     __tablename__ = "transactions"
 
-    id: int | None = Field(
-        default=None,
-        sa_column=Column(Integer, primary_key=True, autoincrement=True)
-    )
+    id: int | None = Field(default=None, primary_key=True)
     account_id: int = Field(foreign_key="accounts.id")
     category_id: int | None = Field(default=None, foreign_key="categories.id")
     amount: Decimal
