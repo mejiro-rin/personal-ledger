@@ -1,6 +1,6 @@
 [project]
 name = "personal-ledger"
-version = "0.1.0"
+version = "0.1.1"
 description = "A personal ledger application for tracking income and expenses, built with FastAPI and SQLite"
 readme = "README.md"
 requires-python = ">=3.10"
